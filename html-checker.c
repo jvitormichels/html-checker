@@ -9,37 +9,43 @@ int main(int argc, char *argv[]) {
   Stack p1;
   stack_new(&p1);
 
-  while(!feof(arquivo)) {
-    char line[80];
-    const char split_char[2] = "<";
-    char *tag;
-
-    if (fgets(line, 80, arquivo) == NULL) {
-      break;
+  char str[1024];
+  char caractere;
+  int i = 0;
+  while((caractere = fgetc(arquivo)) != EOF) {
+    if (caractere == '\n' || caractere == ' ') {
+      continue;
     }
+    else {
+      str[i] = caractere;
+      i++;
+    }
+  }
 
-    fgets(line, 80, arquivo);
-    tag = strtok(line, split_char);
-    Tag *x = (Tag*)malloc(sizeof(Tag));
-    x->name = tag;
+  const char s[2] = "<";
+  char *tag;
 
-    while (tag != NULL) {
-      if (tag[0] != '/') {
-        stack_push(&p1, *x);
+  tag = strtok(str, s);
+  Tag *x = (Tag*)malloc(sizeof(Tag));
+  x->name = tag;
+
+  while(tag != NULL) {
+    if (tag[0] != '/') {
+      stack_push(&p1, *x);
+    }
+    else {
+      tag++;
+      if (strcmp(tag, p1.tags[p1.top].name) == 0) {
+        stack_pop(&p1, x);
       }
       else {
-        tag++;
-        if (strcmp(tag, p1.tags[p1.top].name) == 0) {
-          stack_pop(&p1, x);
-        }
-        else {
-          printf("Your HTML is invalid!\n");
-          exit(1);
-        }
+        printf("Oh no, there is something wrong with your html!\n");
+        printf("It looks like you opened a %s tag and didn't close it.\n", p1.tags[p1.top].name);
+        exit(1);
       }
-      tag = strtok(NULL, split_char);
-      x->name = tag;
     }
+    tag = strtok(NULL, s);
+    x->name = tag;
   }
 
   fclose(arquivo);
@@ -47,6 +53,6 @@ int main(int argc, char *argv[]) {
     printf("Your HTML is valid.\n");
     printf("You're doing great, keep it up, King!\n");
   }
-  
+
   return 0;
 }
