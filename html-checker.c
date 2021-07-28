@@ -3,38 +3,49 @@
 #include <string.h>
 #include "stack.h"
 
-int main() {
+int main(int argc, char *argv[]) {
+  FILE *arquivo = fopen(argv[1], "r");
+
   Stack p1;
   stack_new(&p1);
 
-  char str[80] = "<html><body><div></div></body></html>";
-  const char s[2] = "<";
-  char *tag;
+  while(!feof(arquivo)) {
+    char line[80];
+    const char split_char[2] = "<";
+    char *tag;
 
-  tag = strtok(str, s);
-  Tag *x = (Tag*)malloc(sizeof(Tag));
-  x->name = tag;
-
-  while(tag != NULL) {
-    if (tag[0] != '/') {
-      stack_push(&p1, *x);
+    if (fgets(line, 80, arquivo) == NULL) {
+      break;
     }
-    else {
-      tag++;
-      if (strcmp(tag, p1.tags[p1.top].name) == 0) {
-        stack_pop(&p1, x);
+
+    fgets(line, 80, arquivo);
+    tag = strtok(line, split_char);
+    Tag *x = (Tag*)malloc(sizeof(Tag));
+    x->name = tag;
+
+    while (tag != NULL) {
+      if (tag[0] != '/') {
+        stack_push(&p1, *x);
       }
       else {
-        printf("HTML inválido!\n");
-        exit(1);
+        tag++;
+        if (strcmp(tag, p1.tags[p1.top].name) == 0) {
+          stack_pop(&p1, x);
+        }
+        else {
+          printf("Your HTML is invalid!\n");
+          exit(1);
+        }
       }
+      tag = strtok(NULL, split_char);
+      x->name = tag;
     }
-    tag = strtok(NULL, s);
-    x->name = tag;
   }
 
+  fclose(arquivo);
   if (stack_empty(p1)) {
-    printf("HTML válido!\n");
+    printf("Your HTML is valid.\n");
+    printf("You're doing great, keep it up, King!\n");
   }
   
   return 0;
