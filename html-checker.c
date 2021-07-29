@@ -56,15 +56,20 @@ int html_is_valid (Stack stack) {
 
 void tags_from_html(char *html_tape, char *path) {
   FILE *file = fopen(path, "r");
-  
+
   char character;
   int i = 0;
+  int is_reading_tag;
 
-  while((character = fgetc(file)) != EOF) {
-    if (character == '\n' || character == ' ') {
-      continue;
+  while ((character = fgetc(file)) != EOF) {
+    if (character == '<') {
+      is_reading_tag = 1;
     }
-    else {
+    if (is_reading_tag && (character == ' ' || character == '\n')) {
+      is_reading_tag = 0;
+    }
+
+    if (is_reading_tag || character == '>') {
       html_tape[i] = character;
       i++;
     }
