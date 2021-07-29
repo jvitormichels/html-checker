@@ -3,56 +3,72 @@
 #include <string.h>
 #include "stack.h"
 
-int main(int argc, char *argv[]) {
-  FILE *arquivo = fopen(argv[1], "r");
+void tags_from_html(char *html_tape, char *path);
+int html_is_valid (Stack tag_stack);
 
-  Stack p1;
-  stack_new(&p1);
+int main(int argc, char *argv[]) {
+  char html_path[50];
+  strncpy(html_path, argv[1], sizeof html_path);
 
   char str[1024];
-  char caractere;
-  int i = 0;
-  while((caractere = fgetc(arquivo)) != EOF) {
-    if (caractere == '\n' || caractere == ' ') {
-      continue;
-    }
-    else {
-      str[i] = caractere;
-      i++;
-    }
-  }
+  tags_from_html(str, html_path);
+
+  Stack tag_stack;
+  stack_new(&tag_stack);
 
   const char s[2] = "<";
-  char *tag;
+  char *tag_name;
 
-  tag = strtok(str, s);
-  Tag *x = (Tag*)malloc(sizeof(Tag));
-  x->name = tag;
+  tag_name = strtok(str, s);
+  Tag *tag = (Tag*)malloc(sizeof(Tag));
+  tag->name = tag_name;
 
-  while(tag != NULL) {
-    if (tag[0] != '/') {
-      stack_push(&p1, *x);
+  while(tag_name != NULL) {
+    if (tag_name[0] != '/') {
+      stack_push(&tag_stack, *tag);
     }
     else {
-      tag++;
-      if (strcmp(tag, p1.tags[p1.top].name) == 0) {
-        stack_pop(&p1, x);
+      tag_name++;
+      if (strcmp(tag_name, tag_stack.tags[tag_stack.top].name) == 0) {
+        stack_pop(&tag_stack, tag);
       }
       else {
         printf("Oh no, there is something wrong with your html!\n");
-        printf("It looks like you opened a %s tag and didn't close it.\n", p1.tags[p1.top].name);
+        printf("It looks like you opened a %s tag and didn't close it.\n", tag_stack.tags[tag_stack.top].name);
         exit(1);
       }
     }
-    tag = strtok(NULL, s);
-    x->name = tag;
+    tag_name = strtok(NULL, s);
+    tag->name = tag_name;
   }
 
-  fclose(arquivo);
-  if (stack_empty(p1)) {
+  if (html_is_valid(tag_stack)) {
     printf("Your HTML is valid.\n");
     printf("You're doing great, keep it up, King!\n");
   }
 
   return 0;
+}
+
+int html_is_valid (Stack stack) {
+  return stack_empty(stack);
+}
+
+void tags_from_html(char *html_tape, char *path) {
+  FILE *file = fopen(path, "r");
+  
+  char character;
+  int i = 0;
+
+  while((character = fgetc(file)) != EOF) {
+    if (character == '\n' || character == ' ') {
+      continue;
+    }
+    else {
+      html_tape[i] = character;
+      i++;
+    }
+  }
+
+  fclose(file);
 }
