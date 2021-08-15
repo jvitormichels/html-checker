@@ -4,7 +4,7 @@
 #include "stack.h"
 
 void tags_from_html(char *html_tape, char *path);
-int html_is_valid (Stack tag_stack);
+int is_valid_html (Stack tag_stack);
 
 int main(int argc, char *argv[]) {
   char html_path[50];
@@ -12,14 +12,15 @@ int main(int argc, char *argv[]) {
 
   char str[1024];
   tags_from_html(str, html_path);
+  printf("%s\n", str);
 
   Stack tag_stack;
   stack_new(&tag_stack);
 
-  const char s[2] = "<";
+  const char split_char[2] = "<";
   char *tag_name;
 
-  tag_name = strtok(str, s);
+  tag_name = strtok(str, split_char);
   Tag *tag = (Tag*)malloc(sizeof(Tag));
   tag->name = tag_name;
 
@@ -38,11 +39,11 @@ int main(int argc, char *argv[]) {
         exit(1);
       }
     }
-    tag_name = strtok(NULL, s);
+    tag_name = strtok(NULL, split_char);
     tag->name = tag_name;
   }
 
-  if (html_is_valid(tag_stack)) {
+  if (is_valid_html(tag_stack)) {
     printf("Your HTML is valid.\n");
     printf("You're doing great, keep it up, King!\n");
   }
@@ -50,7 +51,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-int html_is_valid (Stack stack) {
+int is_valid_html (Stack stack) {
   return stack_empty(stack);
 }
 
